@@ -379,7 +379,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   Future<ClosedCaptionFile>? _closedCaptionFileFuture;
   ClosedCaptionFile? _closedCaptionFile;
   Timer? _timer;
-  bool _isDisposed = false;
+  bool isDisposed = false;
   Completer<void>? _creatingCompleter;
   StreamSubscription<dynamic>? _eventSubscription;
   _VideoAppLifeCycleObserver? _lifeCycleObserver;
@@ -451,7 +451,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     }
 
     void eventListener(VideoEvent event) {
-      if (_isDisposed) {
+      if (isDisposed) {
         return;
       }
 
@@ -525,21 +525,21 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
 
   @override
   Future<void> dispose() async {
-    if (_isDisposed) {
+    if (isDisposed) {
       return;
     }
 
     if (_creatingCompleter != null) {
       await _creatingCompleter!.future;
-      if (!_isDisposed) {
-        _isDisposed = true;
+      if (!isDisposed) {
+        isDisposed = true;
         _timer?.cancel();
         await _eventSubscription?.cancel();
         await _videoPlayerPlatform.dispose(_textureId);
       }
       _lifeCycleObserver?.dispose();
     }
-    _isDisposed = true;
+    isDisposed = true;
     super.dispose();
   }
 
@@ -572,14 +572,14 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   }
 
   Future<void> _applyLooping() async {
-    if (_isDisposedOrNotInitialized) {
+    if (isDisposedOrNotInitialized) {
       return;
     }
     await _videoPlayerPlatform.setLooping(_textureId, value.isLooping);
   }
 
   Future<void> _applyPlayPause() async {
-    if (_isDisposedOrNotInitialized) {
+    if (isDisposedOrNotInitialized) {
       return;
     }
     if (value.isPlaying) {
@@ -590,7 +590,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
       _timer = Timer.periodic(
         const Duration(milliseconds: 500),
         (Timer timer) async {
-          if (_isDisposed) {
+          if (isDisposed) {
             return;
           }
           final Duration? newPosition = await position;
@@ -612,14 +612,14 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   }
 
   Future<void> _applyVolume() async {
-    if (_isDisposedOrNotInitialized) {
+    if (isDisposedOrNotInitialized) {
       return;
     }
     await _videoPlayerPlatform.setVolume(_textureId, value.volume);
   }
 
   Future<void> _applyPlaybackSpeed() async {
-    if (_isDisposedOrNotInitialized) {
+    if (isDisposedOrNotInitialized) {
       return;
     }
 
@@ -638,7 +638,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
 
   /// The position in the current video.
   Future<Duration?> get position async {
-    if (_isDisposed) {
+    if (isDisposed) {
       return null;
     }
     return _videoPlayerPlatform.getPosition(_textureId);
@@ -650,7 +650,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   /// If [moment] is outside of the video's full range it will be automatically
   /// and silently clamped.
   Future<void> seekTo(Duration position) async {
-    if (_isDisposedOrNotInitialized) {
+    if (isDisposedOrNotInitialized) {
       return;
     }
     if (position > value.duration) {
@@ -784,12 +784,12 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   void removeListener(VoidCallback listener) {
     // Prevent VideoPlayer from causing an exception to be thrown when attempting to
     // remove its own listener after the controller has already been disposed.
-    if (!_isDisposed) {
+    if (!isDisposed) {
       super.removeListener(listener);
     }
   }
 
-  bool get _isDisposedOrNotInitialized => _isDisposed || !value.isInitialized;
+  bool get isDisposedOrNotInitialized => isDisposed || !value.isInitialized;
 }
 
 class _VideoAppLifeCycleObserver extends Object with WidgetsBindingObserver {
